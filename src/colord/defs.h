@@ -30,7 +30,7 @@ constexpr uint32_t version_patch = 0;
 #define USE_COMPACTED_READS
 
 //#define MONITOR_QUEUES
-//#define MEASURE_THREADS_TIMES
+#define MEASURE_THREADS_TIMES
 
 using anchor_type = uint64_t;
 using kmer_type = uint64_t;

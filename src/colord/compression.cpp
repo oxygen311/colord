@@ -589,6 +589,9 @@ void runCompression(const CCompressorParams& params, CInfo& info)
 		tw.stopTimer();
 		tc.similarity_finder = tw.getElapsedTime();
 		tc.similarity_finder_internal = std::move(sim_graph.GetTwTimes());
+		for (auto rec: sim_graph.miscTimes) {
+				tc.miscTimes[rec.first] = rec.second;
+			}
 #endif
 	});
 	

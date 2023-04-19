@@ -157,8 +157,6 @@ class CReadsSimilarityGraph
 	int n_compression_threads;
 	DataSource dataSource;
 
-	std::map<std::string, double> miscTimes;
-
 #ifdef USE_BETTER_PARALLELIZATION_IN_GRAPH
 	std::unique_ptr<CReadsSimilarityGraphInternalThreads> internalThreads;
 #else
@@ -181,6 +179,8 @@ public:
 		DataSource dataSource,
 		double fill_factor_kmers_to_reads,
 		bool verbose);
+
+	std::map<std::string, double> miscTimes;
 
 #ifdef MEASURE_THREADS_TIMES
 	std::vector<double>& GetTwTimes();

@@ -106,6 +106,7 @@ struct CTimeCollector
 	double entropyCoderQual{};
 	double entropyCoderHeader{};
 	double storeResult{};
+	std::map<std::string, double> miscTimes;
 	std::mutex mtxEncoders;
 	std::vector<double> similarity_finder_internal;
 
@@ -150,6 +151,12 @@ public:
 
 		std::cerr << "\tentr. compr. header: " << entropyCoderHeader << "\n";
 		std::cerr << "\tstore result: " << storeResult << "\n";
+
+		std::cerr << "\t### Detailed measurements:\n";
+		for (auto rec: miscTimes) {
+			std::cerr << '\t' << rec.first << ": " << rec.second << '\n';
+		}
+		std::cerr << "\t### End of detailed measurements\n\n";
 
 #endif // !__APPLE__
 

@@ -552,15 +552,26 @@ CReadsSimilarityGraph::CReadsSimilarityGraph(CParallelQueue<read_pack_t>& reads_
 	,
 	internalThreads(std::make_unique<CReadsSimilarityGraphInternalThreads>(n_compression_threads + 1, kmer_len, filteredKmers, compress_queue))
 #endif // USE_BETTER_PARALLELIZATION_IN_GRAPH
-{
+{	
+	CThreadWatch tw_prg;
+	tw_prg.startTimer();
 	processReferenceGenome(reference_genome);
+	tw_prg.stopTimer();
+	miscTimes["CReadsSimilarityGraph::processReferenceGenome()"] += tw_prg.getElapsedTime();
+
 	read_pack_t reads_pack;
 	while (reads_queue.Pop(reads_pack))
 	{
+		CThreadWatch tw_prp;
+		tw_prp.startTimer();
+
 		if(dataSource == DataSource::PBHiFi)
 			processReadsPackHiFi(reads_pack);
 		else
 			processReadsPack(reads_pack);
+
+		tw_prp.stopTimer();
+		miscTimes["CReadsSimilarityGraph::processReadsPack()"] += tw_prp.getElapsedTime();
 
 		current_out_queue_elem.id = current_out_elem_id++;
 		compress_queue.Push(std::move(current_out_queue_elem));

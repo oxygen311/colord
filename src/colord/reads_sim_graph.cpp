@@ -323,6 +323,9 @@ void CReadsSimilarityGraph::processReferenceGenome(CReferenceGenome* reference_g
 
 void CReadsSimilarityGraph::processReadsPack(const read_pack_t& reads_pack)
 {
+	CThreadWatch tw;
+	tw.startTimer();
+
 	auto accepted_kmers = getAcceptedKmers(reads_pack);
 
 	std::vector<std::pair<uint32_t, uint32_t>> neighbours;
@@ -331,8 +334,13 @@ void CReadsSimilarityGraph::processReadsPack(const read_pack_t& reads_pack)
 	m.max_load_factor(1.0);
 
 	assert(reads_pack.size() == accepted_kmers.size());
+	tw.stopTimer();
+	miscTimes["CReadsSimilarityGraph::processReadsPack()::initialization"] += tw.getElapsedTime();
+
 	for(size_t i = 0 ; i < reads_pack.size() ; ++i)
 	{
+		tw.startTimer();
+
 		auto& [read, read_kmers] = accepted_kmers[i];
 		bool hasN = reads_pack[i].first;
 		
@@ -345,6 +353,9 @@ void CReadsSimilarityGraph::processReadsPack(const read_pack_t& reads_pack)
 			reference_reads.Add(*read);
 			++id_in_reference;
 		}
+
+		tw.stopTimer();
+		miscTimes["CReadsSimilarityGraph::processReadsPack()::add to reference"] += tw.getElapsedTime();
 
 //		std::unordered_map<uint32_t, uint32_t> m;
 
@@ -365,6 +376,7 @@ void CReadsSimilarityGraph::processReadsPack(const read_pack_t& reads_pack)
 			}
 		}*/
 
+		tw.startTimer();
 		m.clear();
 
 		const uint32_t pf_prefix_offset = 2;
@@ -394,6 +406,11 @@ void CReadsSimilarityGraph::processReadsPack(const read_pack_t& reads_pack)
 
 		}
 
+		tw.stopTimer();
+		miscTimes["CReadsSimilarityGraph::processReadsPack()::find neighbours with kmers"] += tw.getElapsedTime();
+
+		tw.startTimer();
+
 		current_out_queue_elem.data.emplace_back();
 		current_out_queue_elem.data.back().read_id = current_read_id;
 		current_out_queue_elem.data.back().hasN = hasN;
@@ -421,6 +438,8 @@ void CReadsSimilarityGraph::processReadsPack(const read_pack_t& reads_pack)
 			current_out_queue_elem.data.back().ref_reads.push_back(elem.first);
 
 		++current_read_id;
+		tw.stopTimer();
+		miscTimes["CReadsSimilarityGraph::processReadsPack()::sort and emplace neighbours"] += tw.getElapsedTime();
 	}
 
 	//kmers.PrintMemoryUsage();

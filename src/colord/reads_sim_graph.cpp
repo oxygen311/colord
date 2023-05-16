@@ -323,7 +323,7 @@ void CReadsSimilarityGraph::processReferenceGenome(CReferenceGenome* reference_g
 
 void CReadsSimilarityGraph::processReadsPack(const read_pack_t& reads_pack)
 {
-	CThreadWatch tw;
+	CThreadWatch tw, tw2;
 	tw.startTimer();
 
 	auto accepted_kmers = getAcceptedKmers(reads_pack);
@@ -384,25 +384,37 @@ void CReadsSimilarityGraph::processReadsPack(const read_pack_t& reads_pack)
 
 		uint32_t read_kmers_size = static_cast<uint32_t>(read_kmers.size());
 		for (uint32_t i = 0; i < read_kmers_size; ++i)
-		{
+		{	
+			tw2.startTimer();
 			if(i + pf_prefix_offset < read_kmers_size)
 				kmers.prefetch_prefix(read_kmers[i + pf_prefix_offset]);
 			if(i + pf_suffix_offset < read_kmers_size)
 				kmers.prefetch_suffix(read_kmers[i + pf_suffix_offset]);
+			tw2.stopTimer();
+			miscTimes["CReadsSimilarityGraph::processReadsPack()::find neighbours with kmers::prefetch"] += tw2.getElapsedTime();
 
+			tw2.startTimer();
 			auto [localit, loc_end] = kmers.find(read_kmers[i]);
 			uint32_t kmer_card = 0;
+			tw2.stopTimer();
+			miscTimes["CReadsSimilarityGraph::processReadsPack()::find neighbours with kmers::find reads"] += tw2.getElapsedTime();
 
+			tw2.startTimer();
 			for (; localit != loc_end; ++localit)
 			{
 				++m[localit->second];
 				++kmer_card;
 			}
+			tw2.stopTimer();
+			miscTimes["CReadsSimilarityGraph::processReadsPack()::find neighbours with kmers::iterate reads"] += tw2.getElapsedTime();
 
+			tw2.startTimer();
 			if (acceptRefRead && kmer_card < maxKmerCount)
 			{
 				kmers.insert(read_kmers[i], id_in_reference - 1);
 			}
+			tw2.stopTimer();
+			miscTimes["CReadsSimilarityGraph::processReadsPack()::find neighbours with kmers::accept as reference"] += tw2.getElapsedTime();
 
 		}
 

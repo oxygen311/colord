@@ -387,6 +387,8 @@ void CReadsSimilarityGraph::processReadsPack(const read_pack_t& reads_pack)
 				++kmer_card;
 			}
 
+			std::cerr << "m cycle length: " << kmer_card << std::endl;
+
 			if (acceptRefRead && kmer_card < maxKmerCount)
 			{
 				kmers.insert(read_kmers[i], id_in_reference - 1);
@@ -416,6 +418,11 @@ void CReadsSimilarityGraph::processReadsPack(const read_pack_t& reads_pack)
 
 		if (neighbours.size() > max_candidates)
 			neighbours.resize(max_candidates);
+
+		std::cerr << "best neighbours: ";
+		for (const auto&  elem : neighbours)
+			std::cerr << elem.second;
+		std::cerr << std::endl;
 
 		for (const auto&  elem : neighbours)
 			current_out_queue_elem.data.back().ref_reads.push_back(elem.first);

@@ -303,6 +303,8 @@ void CReadsSimilarityGraph::processReferenceGenome(CReferenceGenome* reference_g
 
 	assert(reads_pack.size() == accepted_kmers.size());
 
+	std::unordered_map<uint32_t, uint32_t> kmer_counter;
+
 	for (size_t i = 0; i < reads_pack.size(); ++i)
 	{
 		auto& [read, read_kmers] = accepted_kmers[i];
@@ -312,8 +314,11 @@ void CReadsSimilarityGraph::processReferenceGenome(CReferenceGenome* reference_g
 		
 		uint32_t read_kmers_size = static_cast<uint32_t>(read_kmers.size());
 		for (uint32_t i = 0; i < read_kmers_size; ++i)
-		{			
-			kmers.insert(read_kmers[i], id_in_reference - 1);
+		{	
+			auto kmer_count = ++kmer_counter[read_kmers[i]];
+			
+			if (kmer_count < maxKmerCount)
+				kmers.insert(read_kmers[i], id_in_reference - 1);
 		}
 
 		++current_read_id;
